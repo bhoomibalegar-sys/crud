@@ -88,6 +88,7 @@ tr:hover {
 </head>
 
 <body>
+<tbody id="data"></tbody>
 
 <div class="container">
 
@@ -130,33 +131,31 @@ function showToast(msg){
 
 function load(){
     fetch("read.php")
-    .then(res=>res.json())
-    .then(data=>{
-        console.log("DATA FROM SERVER:", data); 
+    .then(res => res.json())
+    .then(data => {
 
-        let rows="";
-        data.forEach(s=>{
+        console.log("DATA:", data); // 👈 debug
 
-            // 🛑 Fix undefined issue safely
-            let id = s.id ?? '';
-            let name = s.name ?? '';
-            let email = s.email ?? '';
-            let age = s.age ?? '';
+        let rows = "";
 
-            rows+=`
+        data.forEach(s => {
+
+            rows += `
             <tr>
-            <td>${id}</td>
-            <td contenteditable="true" onblur="update(${id}, this)">${name}</td>
-            <td contenteditable="true" onblur="update(${id}, this)">${email}</td>
-            <td contenteditable="true" onblur="update(${id}, this)">${age}</td>
-            <td>
-                <button class="delete-btn" onclick="del(${id})">Delete</button>
-            </td>
+                <td>${s.id}</td>
+                <td><input type="text" value="${s.name || ''}" id="name_${s.id}"></td>
+                <td><input type="text" value="${s.email || ''}" id="email_${s.id}"></td>
+                <td><input type="number" value="${s.age || ''}" id="age_${s.id}"></td>
+                <td>
+                    <button onclick="updateStudent(${s.id})">Update</button>
+                    <button onclick="del(${s.id})">Delete</button>
+                </td>
             </tr>`;
         });
 
-        document.getElementById("data").innerHTML=rows;
-    });
+        document.getElementById("data").innerHTML = rows;
+    })
+    .catch(err => console.error(err));
 }
 
 function addStudent(){
@@ -173,18 +172,27 @@ function addStudent(){
     });
 }
 
-function update(id, el){
-    let row = el.parentElement.children;
+function updateStudent(id){
 
-    let fd=new FormData();
+    let name = document.getElementById("name_" + id).value;
+    let email = document.getElementById("email_" + id).value;
+    let age = document.getElementById("age_" + id).value;
+
+    let fd = new FormData();
     fd.append("id", id);
-    fd.append("name", row[1].innerText);
-    fd.append("email", row[2].innerText);
-    fd.append("age", row[3].innerText);
+    fd.append("name", name);
+    fd.append("email", email);
+    fd.append("age", age);
 
-    fetch("update.php",{method:"POST",body:fd})
-    .then(res=>res.json())
-    .then(d=>showToast(d.message));
+    fetch("update.php", {
+        method: "POST",
+        body: fd
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+        load();
+    });
 }
 
 function del(id){
