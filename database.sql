@@ -1,6 +1,6 @@
-CREATE DATABASE student_db;
+CREATE DATABASE Studentcrud_db;
 
-USE student_db;
+USE Studentcrud_db;
 
 CREATE TABLE students (
     id INT AUTO_INCREMENT PRIMARY KEY,
